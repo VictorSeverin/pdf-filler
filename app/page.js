@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { addDays, format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,7 +22,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
-import { parseExcel } from "@/lib/utils";
+import { parseExcel } from "../lib/utils"; // Adjust the import path accordingly
+import { fillPdfTemplate } from "../lib/utils"; // Adjust the import path accordingly
 export default function Home() {
   const [file, setFile] = useState(null);
   const [name, setName] = useState("");
@@ -53,32 +54,51 @@ export default function Home() {
 
   const handleGenerate = async () => {
     if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("name", name);
-      formData.append("date", JSON.stringify(date));
+      console.log(name);
+      console.log(date.from);
+      console.log(file);
+      console.log(street);
+      console.log(city);
+      console.log(zip);
 
-      console.log(formData.get("file"));
-      console.log(formData.get("street"));
-      console.log(formData.get("city"));
-      console.log(formData.get("zip"));
+      if (file) {
+        try {
+          const units = await parseExcel(file);
+          console.log("Parsed units:", units);
 
-      // if (file) {
-      //   try {
-      //     const units = await parseExcel(file);
-      //     console.log("Parsed units:", units);
+          const tenants = Object.entries(units).map(
+            ([unitNumber, tenantName]) => ({
+              tenantName,
+              unitNumber,
+            })
+          );
+          console.log(tenants);
+          const pdfBlob = await fillPdfTemplate(
+            tenants,
+            name,
+            street,
+            city,
+            zip,
+            "12/12/12"
+          );
 
-      //     // Handle the further processing of units here
-      //   } catch (error) {
-      //     console.error("Error parsing Excel file:", error);
-      //   }
-      // } else {
-      //   console.log("No file selected");
-      // }
-      //console.log(units);
+          // Download the PDF
+          const url = URL.createObjectURL(pdfBlob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "tenants_notices.pdf";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+        }
+      } else {
+        console.log("No file or template selected");
+      }
     }
   };
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <Card className="flex flex-col items-center justify-center gap-5">
