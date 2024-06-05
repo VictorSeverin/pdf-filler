@@ -21,18 +21,18 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { DateRange } from "react-day-picker";
-import { parseExcel } from "../lib/utils"; // Adjust the import path accordingly
-import { fillPdfTemplate } from "../lib/utils"; // Adjust the import path accordingly
+import { parseExcel } from "../lib/utils";
+import { fillPdfTemplate } from "../lib/utils";
 export default function Home() {
   const [file, setFile] = useState(null);
   const [name, setName] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
+  const [time, setTime] = useState("");
   const [date, setDate] = useState({
-    from: new Date(2022, 0, 20),
-    to: addDays(new Date(2022, 0, 20), 20),
+    from: new Date(),
+    to: addDays(new Date(), 7),
   });
 
   const handleStreetChange = (event) => {
@@ -51,52 +51,52 @@ export default function Home() {
   const handleNameChange = (event) => {
     setName(event.target.value);
   };
+  const handleTimeChange = (event) => {
+    setTime(event.target.value);
+  };
 
   const handleGenerate = async () => {
     if (file) {
-      console.log(name);
-      console.log(date.from);
-      console.log(file);
-      console.log(street);
-      console.log(city);
-      console.log(zip);
+      try {
+        const units = await parseExcel(file);
 
-      if (file) {
-        try {
-          const units = await parseExcel(file);
-          console.log("Parsed units:", units);
-
-          const tenants = Object.entries(units).map(
-            ([unitNumber, tenantName]) => ({
-              tenantName,
-              unitNumber,
-            })
-          );
-          console.log(tenants);
-          const pdfBlob = await fillPdfTemplate(
-            tenants,
-            name,
-            street,
-            city,
-            zip,
-            "12/12/12"
-          );
-
-          // Download the PDF
-          const url = URL.createObjectURL(pdfBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "tenants_notices.pdf";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        } catch (error) {
-          console.error("Error generating PDF:", error);
-        }
-      } else {
-        console.log("No file or template selected");
+        const tenants = Object.entries(units).map(
+          ([unitNumber, tenantName]) => ({
+            tenantName,
+            unitNumber,
+          })
+        );
+        const dateRangeString =
+          `${format(date.from, "MM/dd/yyyy")} - ${format(
+            date.to,
+            "MM/dd/yyyy"
+          )}` +
+          " | " +
+          time;
+        const today = format(new Date(), "MM/dd/yyyy");
+        const pdfBlob = await fillPdfTemplate(
+          tenants,
+          name,
+          street,
+          city,
+          zip,
+          dateRangeString,
+          today
+        );
+        // Download the PDF
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "tenants_notices.pdf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Error generating PDF:", error);
       }
+    } else {
+      console.log("No file or template selected");
     }
   };
   return (
@@ -184,6 +184,16 @@ export default function Home() {
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+            <div>
+              <Label>Time</Label>
+              <Input
+                id="time"
+                type="text"
+                placeholder="Ex. 10AM - 5PM"
+                value={time}
+                onChange={handleTimeChange}
+              />
             </div>
             <div>
               <Label>Upload Tenant Spreadsheet</Label>
