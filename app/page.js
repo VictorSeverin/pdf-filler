@@ -30,6 +30,7 @@ export default function Home() {
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
   const [time, setTime] = useState("");
+  const [loading, setLoading] = useState(false);
   const [date, setDate] = useState({
     from: new Date(),
     to: addDays(new Date(), 7),
@@ -56,8 +57,9 @@ export default function Home() {
   };
 
   const handleGenerate = async () => {
-    if (file) {
+    if (file && name && street && city && zip) {
       try {
+        setLoading(true);
         const units = await parseExcel(file);
 
         const tenants = Object.entries(units).map(
@@ -87,17 +89,20 @@ export default function Home() {
         const url = URL.createObjectURL(pdfBlob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "tenants_notices.pdf";
+        a.download = "inspection_notices.pdf";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } catch (error) {
         console.error("Error generating PDF:", error);
+        setLoading(false);
       }
     } else {
+      alert("Please enter all information");
       console.log("No file or template selected");
     }
+    setLoading(false);
   };
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -107,6 +112,7 @@ export default function Home() {
             Tool to automatically generate inspection notices for all your
             tenants
           </CardTitle>
+          <CardDescription>{`To download a list of all tenants, follow these steps:`}</CardDescription>
           <CardDescription>{`AppFolio > Reporting > Reports > Tenant Directory`}</CardDescription>
           <CardDescription>{`Click on Actions > "Export as Excel"`}</CardDescription>
         </CardHeader>
@@ -202,10 +208,11 @@ export default function Home() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
-          <Button onClick={handleGenerate}>Generate</Button>
-          <Label>
-            This will download a zip folder with the generated notices
-          </Label>
+          {!loading ? (
+            <Button onClick={handleGenerate}>Generate</Button>
+          ) : (
+            <Button>Loading</Button>
+          )}
         </CardFooter>
       </Card>
     </main>
