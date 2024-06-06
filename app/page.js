@@ -68,13 +68,22 @@ export default function Home() {
             unitNumber,
           })
         );
-        const dateRangeString =
-          `${format(date.from, "MM/dd/yyyy")} - ${format(
+        let dateRangeString;
+        if (date.from && !date.to) {
+          // Only "from" date is entered
+          dateRangeString = `${format(date.from, "MM/dd/yyyy")}`;
+        } else if (date.from && date.to) {
+          // Both "from" and "to" dates are entered
+          dateRangeString = `${format(date.from, "MM/dd/yyyy")} - ${format(
             date.to,
             "MM/dd/yyyy"
-          )}` +
-          " | " +
-          time;
+          )}`;
+        }
+
+        // If there is a "time" variable and both dates are entered, add the time
+        if (date.from && date.to && time) {
+          dateRangeString += ` | ${time}`;
+        }
         const today = format(new Date(), "MM/dd/yyyy");
         const pdfBlob = await fillPdfTemplate(
           tenants,

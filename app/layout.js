@@ -13,11 +13,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>{children}</body>
-      <div className="items-center justify-center flex italic bg-gray-900 text-white">
-        <Link className="underline " href="https://victorseverin.dev">
-          Developed by Victor Severin
-        </Link>
-      </div>
     </html>
   );
 }
