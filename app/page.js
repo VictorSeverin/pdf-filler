@@ -95,6 +95,7 @@ export default function Home() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } catch (error) {
+        alert("Something went wrong!");
         console.error("Error generating PDF:", error);
         setLoading(false);
       }
