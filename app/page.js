@@ -70,20 +70,14 @@ export default function Home() {
         );
         let dateRangeString;
         if (date.from && !date.to) {
-          // Only "from" date is entered
-          dateRangeString = `${format(date.from, "MM/dd/yyyy")}`;
+          dateRangeString = `${format(date.from, "MM/dd/yyyy")} | ${time}`;
         } else if (date.from && date.to) {
-          // Both "from" and "to" dates are entered
           dateRangeString = `${format(date.from, "MM/dd/yyyy")} - ${format(
             date.to,
             "MM/dd/yyyy"
-          )}`;
+          )} | ${time}`;
         }
 
-        // If there is a "time" variable and both dates are entered, add the time
-        if (date.from && date.to && time) {
-          dateRangeString += ` | ${time}`;
-        }
         const today = format(new Date(), "MM/dd/yyyy");
         const pdfBlob = await fillPdfTemplate(
           tenants,
@@ -225,6 +219,9 @@ export default function Home() {
           )}
         </CardFooter>
       </Card>
+      <span className="italic text-red-700">
+        Please double check for errors before printing the forms
+      </span>
     </main>
   );
 }
